@@ -30,6 +30,18 @@ const getCompanyPerCountryTable = async (request, response, country) => {
   return results.rows;
 };
 
+const validateUser = async (request, response, username, pwd) => {
+  console.log(username, pwd)
+  const results = await pool.query("SELECT * FROM admins WHERE username = ($1) AND password = ($2)", [username, pwd])
+  console.log(results.rows)
+  if (
+    results.rows[0].username == username &&
+    results.rows[0].password == pwd
+  )
+    return true;
+  else return false;
+}
+
 const getMonthEarn = async (request, response, month, year) => {
   var date1 = year + "/" + month + "/" + 01;
   var date2 = year + "/" + month + "/" + 31;
@@ -66,4 +78,5 @@ module.exports = {
   getCompanyPerCountryTable,
   getPurchasePerCountry,
   getMonthEarn,
+  validateUser,
 };
