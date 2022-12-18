@@ -31,16 +31,19 @@ const getCompanyPerCountryTable = async (request, response, country) => {
 };
 
 const validateUser = async (request, response, username, pwd) => {
-  console.log(username, pwd)
-  const results = await pool.query("SELECT * FROM admins WHERE username = ($1) AND password = ($2)", [username, pwd])
-  console.log(results.rows)
-  if (
-    results.rows[0].username == username &&
-    results.rows[0].password == pwd
-  )
-    return true;
-  else return false;
-}
+  console.log(username, pwd);
+  const results = await pool.query(
+    "SELECT * FROM admins WHERE username = ($1) AND password = ($2)",
+    [username, pwd]
+  );
+  console.log(results.rows);
+  try {
+    results.rows[0].username == username && results.rows[0].password == pwd;
+    return { auth: true };
+  } catch {
+    return { auth: false, error: "wrong username or password" };
+  }
+};
 
 const getMonthEarn = async (request, response, month, year) => {
   var date1 = year + "/" + month + "/" + 01;
@@ -68,9 +71,19 @@ const getMonthEarn = async (request, response, month, year) => {
   i = parseInt(company.rows[0].sum) + parseInt(private.rows[0].sum);
   results = [];
   results[0] = {
-    'sum': i,
+    sum: i,
   };
   return results;
+};
+
+const deleteCompanyByID = async (req, res, id) => {
+  await pool.query("DELETE FROM company_purchase WHERE id_company=($1)", [id]);
+  await pool.query("DELETE FROM company WHERE id=($1)", [id]);
+};
+
+const deletePrivateByID = async (req, res, id) => {
+  await pool.query("DELETE FROM private_purchase WHERE id_private=($1)", [id]);
+  await pool.query("DELETE FROM private WHERE id=($1)", [id]);
 };
 
 module.exports = {
@@ -79,4 +92,6 @@ module.exports = {
   getPurchasePerCountry,
   getMonthEarn,
   validateUser,
+  deleteCompanyByID,
+  deletePrivateByID,
 };

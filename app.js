@@ -18,6 +18,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 var allRouter = require("./routes/all");
 var pieRouter = require("./routes/pie");
 var dashboardRouter = require("./routes/dasboard");
+var contactsRouter = require("./routes/contacts");
+
 
 //_____AUTENTICAZIONE DELLE  CREDENZIALI PER IL LOGIN________//
 app.post("/user/generateToken", async (req, res) => {
@@ -31,11 +33,12 @@ app.post("/user/generateToken", async (req, res) => {
       userId: 12,
     };
 
-    if (auth) {
+    if (auth.auth) {
       const token = jwt.sign(data, jwtSecretKey, { expiresIn: 10 });
       res.send(token);
     } else {
-      res.status(401).send(error);
+      console.log(auth.error);
+      res.status(401).send(auth.error);
     }
   } catch (error) {
     console.log(error);
@@ -88,6 +91,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/all", allRouter);
 app.use("/pie", pieRouter);
 app.use("/dashboard", dashboardRouter);
+app.use("/contacts", contactsRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
