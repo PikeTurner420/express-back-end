@@ -19,8 +19,8 @@ var allRouter = require("./routes/all");
 var pieRouter = require("./routes/pie");
 var dashboardRouter = require("./routes/dasboard");
 var contactsRouter = require("./routes/contacts");
-
-
+var linechartRouter = require("./routes/lineChart");
+;
 //_____AUTENTICAZIONE DELLE  CREDENZIALI PER IL LOGIN________//
 app.post("/user/generateToken", async (req, res) => {
   console.table(req.body);
@@ -34,7 +34,7 @@ app.post("/user/generateToken", async (req, res) => {
     };
 
     if (auth.auth) {
-      const token = jwt.sign(data, jwtSecretKey, { expiresIn: 10 });
+      const token = jwt.sign(data, jwtSecretKey, { expiresIn: 16 });
       res.send(token);
     } else {
       console.log(auth.error);
@@ -65,17 +65,31 @@ app.get("/user/validateToken", (req, res) => {
     res.status(401).send(error);
   }
 });
+//__________________________________________//
+
 //________RESTART DEL TOKEN_________//
 app.get("/user/restartToken", (req, res) => {
+  let tokenHeaderKey = process.env.TOKEN_HEADER_KEY;
   let jwtSecretKey = process.env.JWT_SECRET_KEY;
-  let data = {
-    time: Date(),
-    userId: 12,
-  };
-  const token = jwt.sign(data, jwtSecretKey, { expiresIn: 10 });
-
-  res.send(token);
+ try {
+   const token = req.header(tokenHeaderKey);
+   //const verified = jwt.verify(token, jwtSecretKey);
+   if (true) {
+     let data = {
+       time: Date(),
+       userId: 12,
+     };
+     console.log("____________________VERIFICATO______________________")
+     res.send(jwt.sign(data, jwtSecretKey, { expiresIn: 16 }));
+   } else {
+     res.status(401).send(error);
+   }
+ } catch (error) {
+   console.log(error);
+   res.status(401).send(error);
+ }
 });
+//__________________________________//
 
 // view engine setup
 const expressLayouts = require("express-ejs-layouts");
@@ -92,6 +106,7 @@ app.use("/all", allRouter);
 app.use("/pie", pieRouter);
 app.use("/dashboard", dashboardRouter);
 app.use("/contacts", contactsRouter);
+app.use("/linechart", linechartRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

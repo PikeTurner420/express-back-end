@@ -86,6 +86,31 @@ const deletePrivateByID = async (req, res, id) => {
   await pool.query("DELETE FROM private WHERE id=($1)", [id]);
 };
 
+const getYearEarnPerCountry = async (req, res, year) => {
+  const countries = await getCountryTable();
+  results = [];
+  for (country of countries) {
+    var countrydata = {
+      id: country.country,
+    };
+    var data = await pool.query(
+      `SELECT sum(product.price) AS "y", 
+	     EXTRACT(MONTH FROM company_purchase.date) AS "x"
+       from company_purchase 
+       INNER JOIN product_key ON company_purchase.id_key = product_key.id
+       INNER join product on product_key.id_product = product.id
+       INNER join company on company_purchase.id_company = company.id
+       WHERE company.country = ($1) AND
+       EXTRACT(YEAR FROM company_purchase.date) = ($2)
+       GROUP BY EXTRACT(MONTH FROM company_purchase.date)`,
+      [country.country, year]
+    );
+    countrydata.data = data.rows;
+    results.push(countrydata);
+  }
+  return results;
+};
+/**/
 module.exports = {
   getCountryTable,
   getCompanyPerCountryTable,
@@ -94,4 +119,5 @@ module.exports = {
   validateUser,
   deleteCompanyByID,
   deletePrivateByID,
+  getYearEarnPerCountry,
 };
